@@ -21,4 +21,3 @@ This section provides flight operational metrics including:
 - Aircraft utilization
 - Crew efficiency   
 """)
-

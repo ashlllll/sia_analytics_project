@@ -2,7 +2,6 @@
 # Author: Ruitao He
 # Last Updated: 2025-12-10
 # Module 2: Customer Experience Analytics
-# Singapore Airlines Visual Theme (Premium Edition)
 # ============================================================
 
 import pandas as pd

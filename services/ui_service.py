@@ -144,6 +144,43 @@ section[data-testid="stSidebar"] {{
     border-right: 1px solid {CARD_BORDER};
 }}
 
+/* ===============================
+   KPI Cards (Module 3 / 4)
+   =============================== */
+
+.kpi-card {{
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}}
+
+.kpi-title {{
+    color: #555555;         
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+}}
+
+.kpi-value {{
+    color: #002663;              /* SIA Navy */
+    font-size: 2.2rem;
+    font-weight: 800;
+    line-height: 1.1;
+}}
+
+.kpi-badge {{
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(255, 237, 77, 0.35);
+    color: #002663;
+    font-weight: 700;
+    font-size: 0.78rem;
+}}
+
 </style>
         """,
         unsafe_allow_html=True,
@@ -172,6 +209,94 @@ def render_kpi_cards(metrics: dict):
                 """,
                 unsafe_allow_html=True,
             )
+
+# ============================================================
+# GLOBAL NAVIGATION – Back to Dashboard
+# ============================================================
+
+def inject_back_to_home_css():
+    """
+    Inject shared CSS for Back-to-Dashboard links.
+    Used by all modules for consistent navigation UX.
+    """
+    st.markdown(
+        f"""
+<style>
+/* ===============================
+   Back to Dashboard (Top Row)
+   =============================== */
+.back-row {{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 6px 0 14px 0;
+    font-size: 1rem;
+}}
+
+.back-row a {{
+    text-decoration: none;
+    font-weight: 700;
+    color: {PRIMARY_NAVY};
+}}
+
+.back-row a:hover {{
+    text-decoration: underline;
+}}
+
+/* ===============================
+   Floating Back Button
+   =============================== */
+.sia-back-float {{
+    position: fixed;
+    top: 90px;
+    right: 18px;
+    z-index: 999999;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 10px 14px;
+    border-radius: 999px;
+
+    background: rgba(255,255,255,0.94);
+    border: 1px solid rgba(0,0,0,0.10);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.14);
+
+    backdrop-filter: blur(6px);
+}}
+
+.sia-back-float a {{
+    text-decoration: none;
+    font-weight: 800;
+    color: {PRIMARY_NAVY};
+    font-size: 0.98rem;
+}}
+
+.sia-back-float a:hover {{
+    text-decoration: underline;
+}}
+</style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_back_to_home():
+    """
+    Render both:
+    - top inline back link
+    - floating back button
+    """
+
+    st.markdown(
+        """
+        <div class="sia-back-float">
+            🏠 <a href="./" target="_self">Back to Dashboard</a>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def render_chart(fig, use_full_width=False):

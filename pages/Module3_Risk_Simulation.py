@@ -12,21 +12,130 @@
 
 import numpy as np
 import pandas as pd
-from services.ui_service import (
-    apply_global_styles,
-    inject_back_to_home_css,
-    render_back_to_home,
-)
 
-def _safe_apply_global_styles():
+
+def _safe_apply_global_styles() -> bool:
     """Apply shared UI theme if available (safe for CLI too)."""
     try:
         from services.ui_service import apply_global_styles
+
         apply_global_styles()
         return True
     except Exception:
         return False
-    
+
+
+def _inject_module_css():
+    """Inject module-specific UI styles."""
+    import streamlit as st
+
+    PRIMARY_NAVY = "#002663"
+    BACKGROUND_CREAM = "#F5F3EE"
+    TEXT_GREY = "#555555"
+    CARD_BG = "#FFFFFF"
+    CARD_BORDER = "#E5E7EB"
+
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{ background-color: {BACKGROUND_CREAM}; }}
+        h1, h2, h3 {{ color: {PRIMARY_NAVY}; }}
+
+        .sia-subtext {{
+            color: {TEXT_GREY};
+            font-size: 1rem;
+            margin-top: -6px;
+        }}
+
+        .kpi-card {{
+            background: {CARD_BG};
+            border: 1px solid {CARD_BORDER};
+            border-radius: 16px;
+            padding: 16px 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            height: 100%;
+        }}
+        .kpi-title {{
+            color: {TEXT_GREY};
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }}
+        .kpi-value {{
+            color: {PRIMARY_NAVY};
+            font-size: 2.2rem;
+            font-weight: 800;
+            line-height: 1;
+        }}
+        .kpi-badge {{
+            display: inline-block;
+            margin-top: 8px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(255, 237, 77, 0.35);
+            color: {PRIMARY_NAVY};
+            font-weight: 700;
+            font-size: 0.78rem;
+        }}
+
+        .section-title {{
+            margin-top: 14px;
+            margin-bottom: 2px;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: {PRIMARY_NAVY};
+        }}
+
+        .hint {{
+            color: {TEXT_GREY};
+            font-size: 0.92rem;
+        }}
+
+        /* Floating back button ONLY */
+        .sia-back-float {{
+            position: fixed;
+            top: 90px;
+            right: 18px;
+            z-index: 999999;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.94);
+            border: 1px solid rgba(0,0,0,0.10);
+            box-shadow: 0 10px 28px rgba(0,0,0,0.14);
+            backdrop-filter: blur(6px);
+        }}
+        .sia-back-float a {{
+            text-decoration: none;
+            font-weight: 800;
+            color: {PRIMARY_NAVY};
+            font-size: 0.98rem;
+        }}
+        .sia-back-float a:hover {{
+            text-decoration: underline;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def _render_back_links():
+    """Render ONLY the floating back-to-dashboard link."""
+    import streamlit as st
+
+    st.markdown(
+        """
+        <div class="sia-back-float">
+            🏠 <a href="./" target="_self">Back to Dashboard</a>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def _kpi_card(st, title: str, value: str, badge: str = ""):
     """Render a KPI card."""
     badge_html = f'<div class="kpi-badge">{badge}</div>' if badge else ""
@@ -92,13 +201,65 @@ def simulate_fuel_price_paths(
     return out
 
 
+def _delay_histogram_df(delays: np.ndarray) -> pd.DataFrame:
+    """
+    Build a clean binned histogram DataFrame for st.bar_chart.
+    Using value_counts() on float delays creates thousands of unique bins -> ugly chart.
+    """
+    # Choose a sensible upper bound (avoid extreme tails dominating)
+    upper = int(max(180, np.percentile(delays, 99) + 30))
+    bin_width = 5
+    bins = np.arange(0, upper + bin_width, bin_width)
+
+    hist, edges = np.histogram(delays, bins=bins)
+    df_hist = pd.DataFrame(
+        {
+            "Delay (min)": edges[:-1],
+            "Count": hist,
+        }
+    ).set_index("Delay (min)")
+
+    return df_hist
+
+
+def _distance_delay_trend_df(df: pd.DataFrame, dist_col: str, delay_col: str) -> pd.DataFrame:
+    """
+    Build a clean trend line: mean delay by distance bucket.
+    Ensures the x-axis labels are readable (string buckets) for st.line_chart.
+    """
+    dist = pd.to_numeric(df[dist_col], errors="coerce")
+    delay = pd.to_numeric(df[delay_col], errors="coerce")
+    tmp = pd.DataFrame({"distance": dist, "delay": delay}).dropna()
+
+    # Guard against weird data
+    if tmp.empty or tmp["distance"].nunique() < 2:
+        return pd.DataFrame()
+
+    # 8 buckets across range
+    tmp["distance_bucket"] = pd.cut(tmp["distance"], bins=8)
+
+    trend = (
+        tmp.groupby("distance_bucket", observed=True)["delay"]
+        .mean()
+        .reset_index()
+    )
+
+    # Make bucket labels readable on chart axis
+    trend["distance_bucket"] = trend["distance_bucket"].astype(str)
+
+    # st.line_chart likes an index
+    trend = trend.set_index("distance_bucket")
+    trend.columns = ["Mean Delay (min)"]
+    return trend
+
+
 def run_streamlit():
     import streamlit as st
     from services.data_service import load_data
 
-    apply_global_styles()
-    inject_back_to_home_css()
-    render_back_to_home()
+    _safe_apply_global_styles()
+    _inject_module_css()
+    _render_back_links()
 
     st.title("⚠️ Risk & Scenario Simulation")
     st.markdown(
@@ -122,6 +283,10 @@ def run_streamlit():
         return
 
     delay_series = pd.to_numeric(df[delay_col], errors="coerce").dropna()
+    if delay_series.empty:
+        st.error("Delay column exists but contains no numeric values.")
+        return
+
     mean_delay = float(delay_series.mean())
     std_delay = float(delay_series.std())
     if not (std_delay > 0):
@@ -152,15 +317,18 @@ def run_streamlit():
     with k4:
         _kpi_card(st, "Worst Case", f"{kpis['worst']:.1f}", badge="Tail risk")
 
+    # =========================================================
+    # FIXED: 📊 Simulated Delay Distribution (clean histogram)
+    # =========================================================
     st.markdown('<div class="section-title">📊 Simulated Delay Distribution</div>', unsafe_allow_html=True)
-    st.markdown('<div class="hint">Binned histogram of simulated delays.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hint">Binned histogram (5-minute buckets) of simulated delays.</div>', unsafe_allow_html=True)
 
-    upper = int(max(180, np.percentile(delays, 99) + 30))
-    bins = np.arange(0, upper + 5, 5)
-    hist, edges = np.histogram(delays, bins=bins)
-    hist_df = pd.DataFrame({"Delay (min)": edges[:-1], "Count": hist}).set_index("Delay (min)")
+    hist_df = _delay_histogram_df(delays)
     st.bar_chart(hist_df)
 
+    # =========================================================
+    # Fuel price simulation (unchanged)
+    # =========================================================
     st.markdown('<div class="section-title">🛢️ Fuel Price Volatility (Simulation)</div>', unsafe_allow_html=True)
     st.markdown('<div class="hint">Synthetic simulation for academic demonstration.</div>', unsafe_allow_html=True)
 
@@ -175,48 +343,59 @@ def run_streamlit():
     fuel_paths = simulate_fuel_price_paths(start_price, days, annual_vol=vol, annual_drift=0.03, n_paths=18)
     st.line_chart(fuel_paths)
 
+    # =========================================================
+    # FIXED: 🧭 Distance vs Delay (readable buckets)
+    # =========================================================
     st.markdown('<div class="section-title">🧭 Context: Distance vs Delay (Dataset Trend)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hint">Average delay by distance bucket (from the dataset).</div>', unsafe_allow_html=True)
 
     if dist_col is None:
         st.info("No distance column found. Skipping distance context chart.")
         return
 
-    dist = pd.to_numeric(df[dist_col], errors="coerce")
-    tmp = pd.DataFrame({"distance": dist, "delay": pd.to_numeric(df[delay_col], errors="coerce")}).dropna()
+    trend = _distance_delay_trend_df(df, dist_col, delay_col)
+    if trend.empty:
+        st.info("Not enough valid distance/delay data to build the distance trend chart.")
+        return
 
-    tmp["distance_bucket"] = pd.cut(tmp["distance"], bins=8)
-    trend = tmp.groupby("distance_bucket", observed=True)["delay"].mean().reset_index()
-    trend["distance_bucket"] = trend["distance_bucket"].astype(str)
-    trend = trend.set_index("distance_bucket")
     st.line_chart(trend)
 
 
 def run_cli():
     from services.data_service import load_data
 
+    print("\n--- Risk & Scenario Simulation (CLI) ---")
+
     df = load_data()
 
-    print("\n=======================================")
-    print(" RISK & SCENARIO SIMULATION (CLI) ")
-    print("=======================================\n")
-
-    delay_col = _first_existing_col(
-        df, ["Departure Delay in Minutes", "DepartureDelay", "DepDelay"]
-    )
-
+    delay_col = _first_existing_col(df, ["Departure Delay in Minutes", "DepartureDelay", "DepDelay"])
     if delay_col is None:
-        print("Departure Delay Data : Not Available")
-    else:
-        delay_series = pd.to_numeric(df[delay_col], errors="coerce").dropna()
-        mean_delay = float(delay_series.mean())
-        print(f"Avg Departure Delay  : {mean_delay:.2f} min")
+        print("ERROR: Could not find a departure delay column.")
+        return
 
-    print("\nℹ️  Note:")
-    print("Monte Carlo simulation, scenario tuning,")
-    print("and risk distribution analysis are")
-    print("available in the Streamlit UI.")
+    delay_series = pd.to_numeric(df[delay_col], errors="coerce").dropna()
+    if delay_series.empty:
+        print("ERROR: Delay column exists but has no numeric values.")
+        return
 
-    input("\nPress ENTER to return to main menu...")
+    mean_delay = float(delay_series.mean())
+    std_delay = float(delay_series.std()) if float(delay_series.std()) > 0 else 10.0
+
+    sims = 12000
+    threshold = 60
+    crisis_mult = 1.15
+
+    delays = simulate_delay_monte_carlo(mean_delay, std_delay, sims, crisis_mult)
+    kpis = delay_risk_kpis(delays, threshold)
+
+    print(f"Baseline mean delay: {mean_delay:.2f} min | std: {std_delay:.2f} min")
+    print(f"Simulations: {sims} | Crisis multiplier: {crisis_mult:.2f}")
+    print(f"Expected delay: {kpis['expected']:.2f} min")
+    print(f"P(Delay > {threshold} min): {kpis['p_over']:.2f}%")
+    print(f"95th percentile: {kpis['p95']:.2f} min")
+    print(f"99th percentile: {kpis['p99']:.2f} min")
+    print(f"Worst case: {kpis['worst']:.2f} min")
+
 
 def main(mode="streamlit"):
     if mode == "cli":

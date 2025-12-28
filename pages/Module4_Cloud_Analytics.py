@@ -24,6 +24,7 @@ import pandas as pd
 def _safe_apply_global_styles() -> bool:
     try:
         from services.ui_service import apply_global_styles
+
         apply_global_styles()
         return True
     except Exception:
@@ -46,7 +47,7 @@ def _inject_module_css() -> None:
 
     PRIMARY_NAVY = "#002663"
     BACKGROUND_CREAM = "#F5F3EE"
-    TEXT_GREY = "#5E5A5A"
+    TEXT_GREY = "#555555"
     CARD_BG = "#FFFFFF"
     CARD_BORDER = "#E5E7EB"
 
@@ -106,10 +107,50 @@ def _inject_module_css() -> None:
             font-size: 0.92rem;
         }}
 
+        /* Floating back button ONLY */
+        .sia-back-float {{
+            position: fixed;
+            top: 90px;
+            right: 18px;
+            z-index: 999999;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.94);
+            border: 1px solid rgba(0,0,0,0.10);
+            box-shadow: 0 10px 28px rgba(0,0,0,0.14);
+            backdrop-filter: blur(6px);
+        }}
+        .sia-back-float a {{
+            text-decoration: none;
+            font-weight: 800;
+            color: {PRIMARY_NAVY};
+            font-size: 0.98rem;
+        }}
+        .sia-back-float a:hover {{
+            text-decoration: underline;
+        }}
         </style>
         """,
         unsafe_allow_html=True,
     )
+
+
+def _render_back_links() -> None:
+    """Render ONLY the floating back-to-dashboard link."""
+    import streamlit as st
+
+    st.markdown(
+        """
+        <div class="sia-back-float">
+            🏠 <a href="./" target="_self">Back to Dashboard</a>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
 
 def _kpi_card(st, title: str, value: str, badge: str = "") -> None:
     badge_html = f'<div class="kpi-badge">{badge}</div>' if badge else ""
@@ -170,14 +211,12 @@ def _batch_aggregate(df: pd.DataFrame, batch_size: int) -> pd.DataFrame:
 
         sat_rate = None
         if sat_col:
-            # handle "satisfied"/"neutral or dissatisfied" or 0/1
             v = chunk[sat_col]
             if v.dtype == object:
                 sat_rate = float((v.astype(str).str.lower().str.contains("satisf")).mean() * 100.0)
             else:
                 vv = pd.to_numeric(v, errors="coerce")
                 if vv.notna().any():
-                    # assume 1 indicates satisfied if binary-like
                     sat_rate = float((vv > 0).mean() * 100.0)
 
         out.append(
@@ -238,14 +277,10 @@ def _streaming_simulation(df: pd.DataFrame, window_size: int, steps: int, seed: 
 def run_streamlit() -> None:
     import streamlit as st
     from services.data_service import load_data
-    from services.ui_service import inject_back_to_home_css, render_back_to_home
 
     _safe_apply_global_styles()
     _inject_module_css()
-
-    inject_back_to_home_css()
-    render_back_to_home()
-
+    _render_back_links()
 
     st.title("☁️ Cloud Analytics")
     st.markdown(
@@ -326,7 +361,11 @@ def run_streamlit() -> None:
     if len(stream_df) == 0:
         st.info("No data available for streaming simulation.")
     else:
-        st.line_chart(stream_df.set_index("Step")[["Avg Delay"]].dropna())
+        if stream_df["Avg Delay"].notna().any():
+            st.line_chart(stream_df.set_index("Step")[["Avg Delay"]].dropna())
+        else:
+            st.info("No delay column found for streaming delay chart.")
+
         if stream_df["Avg Distance"].notna().any():
             st.line_chart(stream_df.set_index("Step")[["Avg Distance"]].dropna())
 
@@ -354,40 +393,39 @@ def run_streamlit() -> None:
 def run_cli() -> None:
     from services.data_service import load_data
 
-    print("\n=======================================")
-    print("        CLOUD ANALYTICS (CLI)")
-    print("=======================================\n")
+    print("\n--- Cloud Analytics (CLI) ---")
 
+    t0 = time.perf_counter()
     df = load_data()
+    load_ms = (time.perf_counter() - t0) * 1000.0
 
     total_rows = int(len(df))
     total_cols = int(df.shape[1])
     missing_cells = int(df.isna().sum().sum())
     mem_mb = _bytes_to_mb(_df_memory_bytes(df))
 
-    print(f"Records analysed      : {total_rows:,}")
-    print(f"Number of features    : {total_cols}")
-    print(f"Missing data cells    : {missing_cells:,}")
-    print(f"Estimated memory use  : {mem_mb:.2f} MB")
+    print(f"Rows: {total_rows:,}")
+    print(f"Columns: {total_cols}")
+    print(f"Missing cells: {missing_cells:,}")
+    print(f"Estimated memory: {mem_mb:.2f} MB")
+    print(f"Load time: {load_ms:.0f} ms")
 
-    # Basic operational KPI
-    delay_col = _first_existing_col(
-        df,
-        ["Departure Delay in Minutes", "DepartureDelay", "DepDelay"]
-    )
+    batch_size = 10000
+    batch_df = _batch_aggregate(df, batch_size=batch_size)
 
-    if delay_col:
-        avg_delay = float(
-            pd.to_numeric(df[delay_col], errors="coerce").mean()
-        )
-        print(f"Average dep. delay    : {avg_delay:.2f} minutes")
+    print(f"\nBatch processing (batch_size={batch_size}):")
+    print(f"Total batches: {len(batch_df)}")
+    print(f"Rows processed: {int(batch_df['Rows'].sum()):,}")
 
-    print("\nℹ️  Note:")
-    print("This CLI provides a high-level overview only.")
-    print("Interactive batch processing, streaming simulation")
-    print("and visual analytics are available in the Streamlit UI.")
+    delay_col = _first_existing_col(df, ["Departure Delay in Minutes", "DepartureDelay", "DepDelay"])
+    if delay_col and batch_df["Avg Departure Delay"].notna().any():
+        avg_delay_overall = float(pd.to_numeric(df[delay_col], errors="coerce").mean())
+        print(f"Overall avg departure delay: {avg_delay_overall:.2f} min")
 
-    input("\nPress ENTER to return to main menu...")
+    stream_df = _streaming_simulation(df, window_size=4000, steps=10, seed=2025)
+    if len(stream_df) > 0 and stream_df["Avg Delay"].notna().any():
+        print(f"Streaming avg delay (10 steps): mean={float(stream_df['Avg Delay'].mean()):.2f} min")
+
 
 def main(mode: str = "streamlit") -> None:
     if mode == "cli":

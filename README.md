@@ -1,278 +1,185 @@
-# ✈️ Singapore Airlines Data Analytics System
+---
 
-### CN6001 Enterprise Application & Cloud Computing – Coursework Project
+# ✈️ Singapore Airlines Analytics System
 
-- **Team Leader:** Qian Zhu  
-- **Team Members:** Charles, Philippe, Ruitao He  
+**Enterprise-Style Python Application (Academic Project)**
 
 ---
 
-## 📌 1. Project Overview
+## 🔎 Project Summary (For Recruiters)
 
-This project implements a **cloud-based data analytics platform for Singapore Airlines (SIA)** using Python and Streamlit.  
-The system demonstrates how an airline can leverage **enterprise application architecture and cloud computing concepts** to analyse operational performance, customer experience, and risk scenarios.
+This project demonstrates my ability to **design, coordinate, and deliver an enterprise-style Python system**, with emphasis on **system architecture, risk awareness, and cloud-ready design**, rather than isolated scripts or visual dashboards.
 
-Because real Singapore Airlines operational data is confidential, the system uses a **synthetic dataset** (`train.csv`) to simulate realistic airline operations and demonstrate an end-to-end analytics pipeline.
+The system simulates how an airline could structure analytics applications to support **operational decision-making**, **risk modelling**, and **scalable processing**, using a clean modular architecture and shared service layers.
 
-Where certain operational metrics (e.g. fuel consumption) are not available in the dataset, **controlled simulation models** are applied using realistic assumptions. All simulated values are clearly documented and used strictly for academic purposes.
-
-The system:
-
-- Runs in a browser with an interactive **Streamlit dashboard**
-- Supports a secondary **Command-Line Interface (CLI)** mode
-- Demonstrates enterprise and cloud computing concepts taught in **CN6001**
+> ⚠️ **Important note:**
+> All data used in this project is **synthetic** and created strictly for **academic demonstration purposes**.
+> No real Singapore Airlines operational data is used.
 
 ---
 
-## 📌 2. System Features
+## 👩‍💻 My Role (Team Leader)
 
-The platform provides **four major analytics modules**, all accessible from the main **Dashboard**.
+As **Team Leader**, I was responsible for the **overall technical direction and system integration** of the project.
+
+My contributions included:
+
+* Designing the **overall system architecture** (dashboard, analytics modules, shared services)
+* Developing the **main dashboard interface and CLI entry point**
+* Coordinating integration across multiple independently developed modules
+* Managing **GitHub version control workflow** and **Streamlit Cloud deployment**
+* Ensuring consistency in structure, documentation, and enterprise-style design principles
+
+This role reflects how I approach real-world systems: **clear structure, modular thinking, risk awareness, and ownership**.
+
+---
+
+## 🧱 What This Project Demonstrates
+
+From a professional and hiring perspective, this project showcases:
+
+### ✅ Enterprise Python System Design
+
+* Modular application structure
+* Clear separation of concerns (`dashboard`, `pages`, `services`)
+* Shared utility layers for data access and UI consistency
+
+### ✅ Risk-Aware & Governance-Oriented Thinking
+
+* Explicit modelling of uncertainty using **Monte Carlo simulation**
+* Clear documentation of assumptions and limitations
+* Dedicated consideration of **security, privacy, and ethical implications**
+
+### ✅ Cloud & Deployment Readiness
+
+* Web-based deployment using **Streamlit**
+* Secondary **CLI mode** for non-visual or lightweight execution
+* Cloud deployment via **GitHub + Streamlit Cloud**
+
+### ✅ Applied Analytics (Beyond Visualisation)
+
+* Decision-support focus rather than reporting-only dashboards
+* Scenario modelling and resilience analysis
+* Batch and near–real-time processing concepts
+
+---
+
+## ⚙️ System Modules 
+
+The system is composed of **six coordinated modules**, covering both **analytics functionality** and **enterprise-level governance considerations**.
 
 ### **1️⃣ Flight Performance Analytics**
 
-- Flight distance distribution and operational profiling  
-- Departure and arrival delay analysis  
-- **Estimated fuel consumption trends (distance-based simulation)**  
-- Crew service performance evaluation  
-
-> **Note:**  
-> Fuel consumption is **synthetically estimated** based on flight distance due to the absence of real fuel data.  
-> This approach is implemented for academic demonstration and cost-awareness analytics only.
-
----
+Analysis of operational flight patterns, including distance distributions, delay trends, and **simulated fuel consumption** using distance-based estimation models.
 
 ### **2️⃣ Customer Experience Analytics**
 
-- Passenger satisfaction score distribution  
-- Inflight and ground service rating analysis  
-- Behaviour-based insights into passenger experience  
-- Identification of service improvement opportunities  
-
----
+Evaluation of passenger satisfaction metrics and service quality indicators to support customer-centric performance improvement.
 
 ### **3️⃣ Risk & Scenario Simulation**
 
-- Monte-Carlo simulation of operational risks  
-- Delay and disruption scenario modelling  
-- Analysis of uncertainty and resilience in airline operations  
-
----
+Monte Carlo–based simulation to model operational uncertainty, delay escalation, and disruption scenarios, enabling **risk-aware decision-making**.
 
 ### **4️⃣ Cloud Analytics**
 
-- Cloud-style data loading and processing demonstrations  
-- Illustration of scalable analytics concepts  
-- Discussion of batch vs real-time processing in cloud environments  
-
-Each module is implemented as a separate Streamlit page under the `pages/` directory.
+Demonstration of cloud-oriented analytics concepts, including batch-style processing, lightweight streaming simulation, and scalable data handling patterns.
 
 ---
 
-## 📌 3. System Architecture
+### **5️⃣ System Overview & Architecture**
 
-```text
-sia_analytics_project/
-│
-├── Dashboard.py                     # Main entry (Homepage UI + CLI router)
-│
-├── assets/
-│   ├── train.csv                    # Synthetic dataset
-│   └── singapore_airlines_logo.png  # Branding asset (optional)
-│
-├── pages/
-│   ├── Module1_Flight_Performance.py
-│   ├── Module2_Customer_Experience.py
-│   ├── Module3_Risk_Simulation.py
-│   └── Module4_Cloud_Analytics.py
-│
-├── services/
-│   ├── ui_service.py                # Global SIA-themed UI styles & components
-│   └── data_service.py              # Shared data loading & helper utilities
-│
-├── requirements.txt                 # Python dependencies
-└── README.md                        # Project documentation
-```
+A dedicated module documenting the **overall system architecture**, including:
 
-### ✔ Clean Modular Design
+* Modular application layout
+* Separation of dashboard, services, and analytics modules
+* Architectural rationale aligned with enterprise application principles
 
-- **`Dashboard.py`** – Front controller  
-  - Streamlit homepage with SIA-themed UI  
-  - CLI menu router (`python3 Dashboard.py cli`)
-- **`services/`** – Reusable business logic and shared computation
-- **`pages/`** – Analytics modules supporting UI and CLI execution
-- **`assets/`** – Synthetic dataset and static resources
-
-This architecture supports **clarity, scalability, and team collaboration**, and aligns with enterprise application design principles.
+This module highlights **system-level thinking beyond individual features**.
 
 ---
 
-## 📌 4. Installation & Local Setup
+### **6️⃣ Security, Risk & Ethical Considerations**
 
-### **Step 1 — Clone the Repository**
+A governance-focused module addressing:
 
-```bash
-git clone https://github.com/ashlllll/sia_analytics_project.git
-cd sia_analytics_project
-```
+* Data privacy and ethical use of analytics
+* Security considerations in decision-support systems
+* Risks associated with synthetic data and simulated metrics
+* Responsible interpretation of analytics outputs
 
-### **Step 2 — Create Virtual Environment (Optional)**
-
-```bash
-python3 -m venv venv
-source venv/bin/activate      # macOS / Linux
-# .\venv\Scripts\activate     # Windows (PowerShell)
-```
-
-### **Step 3 — Install Dependencies**
-
-```bash
-pip install -r requirements.txt
-```
+This module reflects **security-aware and risk-conscious design**, rather than purely functional implementation.
 
 ---
 
-## 📌 5. Running the System
+## ▶️ Quick Run (Optional Technical Review)
 
-### 5.1 Streamlit Web UI (Recommended)
+### Streamlit Web Interface
 
 ```bash
 streamlit run Dashboard.py
 ```
 
-By default, Streamlit will open the application at:
-
-```text
-http://localhost:8501
-```
-
-The dashboard provides:
-
-- A Singapore Airlines–styled homepage
-- Navigation cards to all analytics modules
-- Sidebar-based multi-page navigation
-
----
-
-### 5.2 Command-Line Interface (CLI) Mode
-
-The system also provides a **menu-driven CLI interface** for lightweight, non-visual analytics.
+### Command-Line Interface (CLI)
 
 ```bash
 python3 Dashboard.py cli
 ```
 
-Example menu:
-
-```text
-===========================================
- Singapore Airlines Analytics System (CLI)
-===========================================
-
-1. Flight Performance Analytics
-2. Customer Experience Analytics
-3. Risk & Scenario Simulation
-4. Cloud Analytics
-5. Exit
-```
-
-The CLI mode is designed for:
-
-- Quick operational summaries
-- Numerical performance indicators
-- Demonstration of menu-driven enterprise systems
-
-> **Note:**  
-> Modules that rely heavily on visualization (e.g. Risk Simulation and Cloud Analytics) are primarily accessed via the Streamlit UI.
+The CLI mode provides numerical summaries and menu-driven navigation, demonstrating enterprise-style non-visual system access.
 
 ---
 
-## 📌 6. Cloud Deployment (Streamlit Cloud)
+## 🛠️ Technology Stack
 
-This project is designed to run in a **cloud environment** to meet CN6001 coursework requirements.
+* **Language:** Python
+* **Framework:** Streamlit
+* **Data Processing:** Pandas, NumPy
+* **Key Concepts:**
 
-### Deployment Steps
-
-1. Visit **https://streamlit.io/cloud**
-2. Log in and click **“New app”**
-3. Select the GitHub repository:
-   ```text
-   ashlllll/sia_analytics_project
-   ```
-4. Set **`Dashboard.py`** as the entry script
-5. Click **Deploy**
-
-Streamlit Cloud will automatically:
-
-- Install dependencies from `requirements.txt`
-- Build and deploy the application
-- Provide a public URL for demonstration and assessment
+  * Modular system architecture
+  * Risk modelling (Monte Carlo simulation)
+  * Cloud-oriented analytics patterns
+  * Security, governance, and ethical considerations
 
 ---
 
-## 📌 7. Dataset
+## 📌 Project Context
 
-The system uses a **synthetic dataset**:
+* **Type:** Academic enterprise application project
+* **Course:** Enterprise Application & Cloud Computing
+* **Purpose:** Demonstrate system design, risk awareness, and cloud readiness
+* **Data:** Fully synthetic dataset (`train.csv`)
 
-- **File:** `assets/train.csv`
-- **Purpose:** Academic simulation only
-
-The dataset simulates:
-
-- Passenger profiles
-- Service rating attributes (1–5 scale)
-- Satisfaction labels
-- Flight distances and delays
-- Operational performance indicators
-
-### Dataset Characteristics
-
-- Flight distance distribution is **right-skewed**
-- Sparse values beyond **4000–5000 km** represent long-haul flight caps
-- Clustering near upper bounds reflects **controlled dataset generation**, not data quality issues
+This project is designed to reflect **how enterprise systems are structured and evaluated**, rather than to optimise predictive accuracy or business performance.
 
 ---
 
-## 📌 8. Team & Responsibilities
+## 👥 Team & Responsibilities
 
-| Member                | Responsibility                                                            |
-| --------------------- | ------------------------------------------------------------------------- |
-| **Qian Zhu (Leader)** | System architecture, Dashboard design, CLI integration, Git & cloud setup |
-| **Charles**           | Module 1 – Flight Performance Analytics                                   |
-| **Ruitao He**         | Module 2 – Customer Experience Analytics & UI refinement                  |
-| **Philippe**          | Module 3 – Risk Simulation & Module 4 – Cloud Analytics                   |
-
----
-
-## 📌 9. Development Workflow
-
-```bash
-git checkout -b feature/your_module_name
-git add .
-git commit -m "Implement <feature/module name>"
-git push origin feature/your_module_name
-```
-
-Create a **Pull Request** to merge changes into the main branch.
+| Member                     | Responsibility                                                                 |
+| -------------------------- | ------------------------------------------------------------------------------ |
+| **Qian Zhu (Team Leader)** | System architecture, dashboard & CLI design, GitHub workflow, cloud deployment |
+| Charles                    | Flight Performance Analytics                                                   |
+| Ruitao He                  | Customer Experience Analytics                                                  |
+| Philippe                   | Risk Simulation & Cloud Analytics                                              |
 
 ---
 
-## 📌 10. License
+## ⚖️ License & Usage
 
-This project is developed **exclusively for academic use** under the  
-**CN6001 Enterprise Application & Cloud Computing** module.
+This project is developed **exclusively for academic demonstration**.
 
-- Commercial use is **not permitted**
-- All trademarks and brand references (e.g. Singapore Airlines) are used for **educational demonstration only**
-
----
-
-## 📌 11. Acknowledgements
-
-- Singapore Airlines (conceptual inspiration only)
-- Streamlit open-source community
+* Commercial use is **not permitted**
+* All brand references (e.g. Singapore Airlines) are **conceptual only**
+* No proprietary or confidential data is included
 
 ---
 
-⭐ **Thank you for reviewing our project.**
+## ⭐ Final Note for Reviewers
 
-This system demonstrates how a modern airline can leverage **enterprise architecture, cloud computing, and data analytics** to support operational performance, customer experience, and risk-aware decision-making.
+If you are reviewing this repository as part of a **graduate or entry-level hiring process**, this project represents how I approach:
+
+> **structured problem-solving, enterprise system design, and responsible, risk-aware analytics development.**
+
+---
+

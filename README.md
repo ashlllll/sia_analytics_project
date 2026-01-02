@@ -1,5 +1,3 @@
----
-
 # ✈️ Singapore Airlines Analytics System
 
 **Enterprise-Style Python Application (Academic Project)**
